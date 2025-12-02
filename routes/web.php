@@ -15,13 +15,13 @@ use App\Http\Controllers\CheckoutSettingController;
 
 Auth::routes();
 
-// Route::get('/', [HomeController::class, 'index'])->name('home.index');
-Route::get('/', function() {
-    return view('auth.login');
-})->name('home.index');
-Route::get('/home', function() {
-    return view('index');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home.index');
+// Route::get('/', function() {
+//     return view('auth.login');
+// })->name('home.index');
+// Route::get('/', function() {
+//     return view('index');
+// });
 Route::get('/about', function() {
     return view('about');
 });

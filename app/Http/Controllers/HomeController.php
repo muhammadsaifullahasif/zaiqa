@@ -14,8 +14,23 @@ class HomeController extends Controller
         $slides = Slide::where('status', '1')->take(3)->get();
         $categories = Category::orderby('created_at', 'DESC')->get();
         // $sProducts = Product::whereNotNull('sale_price')->where('sale_price', '!=', '')->inRandomOrder()->take(8)->get();
-        $fProducts = Product::where('is_featured',1)->take(8)->get();
-        return view('index', compact('slides', 'categories', 'fProducts'));
+        $fProducts = Product::whereNull('parent_id')->where('is_featured', 1)->take(8)->get();
+        // Get top selling products
+        $topSellingProducts = Product::whereNull('parent_id')
+            ->select('products.*')
+            ->selectRaw('(
+                SELECT COALESCE(SUM(order_items.qty), 0)
+                FROM order_items
+                WHERE order_items.product_id = products.id
+                OR order_items.product_id IN (
+                    SELECT id FROM products AS variations WHERE variations.parent_id = products.id
+                )
+            ) as total_sold')
+            ->orderByDesc('total_sold')
+            ->limit(8)
+            ->get();
+        // return $slides;
+        return view('index', compact('slides', 'categories', 'fProducts', 'topSellingProducts'));
         // return view('index', compact('slides', 'categories', 'sProducts', 'fProducts'));
     }
 

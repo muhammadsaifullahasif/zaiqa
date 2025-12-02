@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Coupon;
 use App\Models\Address;
+use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -22,8 +23,12 @@ class CartController extends Controller
     }
 
     public function add_to_cart(Request $request) {
-        Cart::instance('cart')->add($request->id, $request->name, $request->quantity, $request->price)->associate('App\Models\Product');
-        return redirect()->back();
+        // return dd($request->all());
+        $product = Product::findOrFail($request->variation_id);
+        $price = $product->product_meta['price'] ?? 0;
+        $vat = $product->product_meta['vat'] ?? 0;
+        Cart::instance('cart')->add($request->product_id, $product->title, $request->quantity, $price, ['unit' => $product->product_meta['unit']], $vat)->associate('App\Models\Product');
+        return redirect()->back()->with('success', 'Product has been added to cart!');
     }
 
     public function update_cart_qty(Request $request) {

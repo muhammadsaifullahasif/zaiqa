@@ -471,8 +471,8 @@ class AdminController extends Controller
     {
         $destinationPath = public_path('uploads/slides');
         $img = Image::read($image->path());
-        $img->cover(400, 690, 'top');
-        $img->resize(400, 690, function($constrait) {
+        $img->cover(1280, 1280, 'top');
+        $img->resize(1280, 1280, function($constrait) {
             $constrait->aspectRatio();
         })->save($destinationPath . '/' . $imageName);
     }

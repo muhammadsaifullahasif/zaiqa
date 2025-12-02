@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\ParentProductScope;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $appends = ['product_meta']; // Ensures this is included in JSON
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new ParentProductScope);
+    }
 
     public function product_meta() {
         return $this->hasMany(ProductMeta::class, 'product_id', 'id');
@@ -104,6 +113,58 @@ class Product extends Model
                 ->max('product_metas.meta_value');
         }
         return $this->product_meta['price'] ?? 0;
+    }
+
+    /**
+     * Check if the product is on sale
+     * For variable products, checks if any variation ahs a sale price
+     * For simple products, checks if it has a sale price set
+     * 
+     * @return bool
+     */
+    public function isOnSale()
+    {
+        if ($this->type === 'variable') {
+            // For variable products, check if any variation has a sale price
+            $hasSalePrice = $this->variations()
+                ->join('product_metas', 'products.id', '=', 'product_metas.product_id')
+                ->where('product_metas.meta_key', 'sale_price')
+                ->where('product_metas.meta_value', '!=', '')
+                ->where('product_metas.meta_value', '!=', '0')
+                ->where('product_metas.meta_value', '!=', null)
+                ->exists();
+
+            return $hasSalePrice;
+        }
+
+        // For simple products, check if sale price exists and is not empty/zero
+        $salePrice = $this->product_meta['sale_price'] ?? null;
+
+        return !empty($salePrice) && $salePrice !== '0' && $salePrice > 0;
+    }
+
+    // Get min unit for variable products
+    public function getMinUnit() {
+        if ($this->type === 'variable') {
+            return $this->variations()
+                ->join('product_metas', 'products.id', '=', 'product_metas.product_id')
+                ->where('product_metas.meta_key', 'unit')
+                ->where('product_metas.meta_value', '!=', '')
+                ->min('product_metas.meta_value');
+        }
+        return $this->product_meta['unit'] ?? 0;
+    }
+
+    // Get max unit for variable products
+    public function getMaxUnit() {
+        if ($this->type === 'variable') {
+            return $this->variations()
+                ->join('product_metas', 'products.id', '=', 'product_metas.product_id')
+                ->where('product_metas.meta_key', 'unit')
+                ->where('product_metas.meta_value', '!=', '')
+                ->max('product_metas.meta_value');
+        }
+        return $this->product_meta['unit'] ?? 0;
     }
 
     // Get total quantity for variable products (sum of all variations)
