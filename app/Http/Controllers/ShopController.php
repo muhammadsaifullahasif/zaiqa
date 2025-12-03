@@ -175,7 +175,7 @@ class ShopController extends Controller
         $product = Product::with('variations.product_meta')
             ->where('slug', $product_slug)->first();
         $rProducts = Product::where('slug', '<>', $product_slug)->whereNull('parent_id')->get()->take(8);
-        // return $product;
+        return $product;
         return view('single-product', compact('product', 'rProducts'));
     }
 }

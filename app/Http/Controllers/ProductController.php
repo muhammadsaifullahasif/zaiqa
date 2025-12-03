@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use App\Models\Scopes\ParentProductScope;
 use Intervention\Image\Laravel\Facades\Image;
 
 class ProductController extends Controller
@@ -174,7 +175,7 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
         $categories = Category::select('id', 'name')->whereNull('parent_id')->orderby('name')->get();
-        $product_variations = Product::where('parent_id', $product->id)->get();
+        $product_variations = Product::withoutGlobalScope(ParentProductScope::class)->where('parent_id', $product->id)->get();
         $units = Unit::select('id', 'name', 'symbol')->orderby('name')->get();
         $sub_categories = Category::select('id', 'name')->where('parent_id', $product->category_id)->orderby('name')->get();
         // return $product_variations;
@@ -267,14 +268,14 @@ class ProductController extends Controller
                 ['meta_value']
             );
 
-            Product::where('parent_id', $product->id)
+            Product::withoutGlobalScope(ParentProductScope::class)->where('parent_id', $product->id)
                 ->whereNotIn('id', $request->variations['id'])
                 ->delete();
 
             $variation_counter = 1;
             foreach($request->variations['unit'] as $index => $variation) {
                 if (isset($request->variations['id'][$index])) {
-                    $product_variation = Product::find($request->variations['id'][$index]);
+                    $product_variation = Product::withoutGlobalScope(ParentProductScope::class)->find($request->variations['id'][$index]);
                 } else {
                     $product_variation = new Product();
                 }
@@ -314,7 +315,8 @@ class ProductController extends Controller
                         ['meta_key' => 'sale_price', 'meta_value' => $request->variations['sale_price'][$index] ?? ''],
                         ['meta_key' => 'price', 'meta_value' => $request->variations['sale_price'][$index] ?? $request->variations['regular_price'][$index]],
                         ['meta_key' => 'quantity', 'meta_value' => $request->variations['quantity'][$index]],
-                        ['meta_key' => 'SKU', 'meta_value' => $request->variations['SKU'][$index]]
+                        ['meta_key' => 'SKU', 'meta_value' => $request->variations['SKU'][$index]],
+                        ['meta_key' => 'vat', 'meta_value' => $request->variations['vat'][$index]]
                     ],
                     ['product_id', 'meta_key'],
                     ['meta_value']

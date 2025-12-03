@@ -31,15 +31,15 @@ Route::get('/contact', function() {
 Route::get('/catalog', function(){
     return view('catalog');
 });
-Route::get('/single-product', function(){
-    return view('single-product');
-});
-Route::get('/cart', function(){
-    return view('cart');
-})->name('cart.index');
-Route::get('/checkout', function(){
-    return view('checkout');
-});
+// Route::get('/single-product', function(){
+//     return view('single-product');
+// });
+// Route::get('/cart', function(){
+//     return view('cart');
+// })->name('cart.index');
+// Route::get('/checkout', function(){
+//     return view('checkout');
+// });
 Route::get('/orders', function(){
     return view('user.orders');
 });
@@ -58,14 +58,14 @@ Route::get('/search', [HomeController::class, 'search'])->name('home.search');
 Route::post('/contact/store', [HomeController::class, 'contact_store'])->name('contact.store');
 Route::get('/shop/{product_slug}', [ShopController::class, 'product_detail'])->name('shop.product.detail');
 
-// Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add', [CartController::class, 'add_to_cart'])->name('cart.add');
 Route::put('/cart/update-qty', [CartController::class, 'update_cart_qty'])->name('cart.update.qty');
 Route::delete('/cart/remove-item/{id}', [CartController::class, 'remove_cart_item'])->name('cart.remove.item');
 Route::delete('/cart/clear', [CartController::class, 'empty_cart'])->name('cart.clear');
-Route::post('/cart/coupon_code', [CartController::class, 'apply_coupon_code'])->name('cart.coupon.code');
-Route::delete('/cart/remove_coupon_code', [CartController::class, 'remove_coupon_code'])->name('cart.remove.coupon.code');
-// Route::get('/checkout', [CartController::class, 'checkout'])->name('checkout.index');
+// Route::post('/cart/coupon_code', [CartController::class, 'apply_coupon_code'])->name('cart.coupon.code');
+// Route::delete('/cart/remove_coupon_code', [CartController::class, 'remove_coupon_code'])->name('cart.remove.coupon.code');
+Route::get('/checkout/{order_id?}', [CartController::class, 'checkout'])->name('checkout.index');
 Route::post('/place-order', [CartController::class, 'place_order'])->name('checkout.place.order');
 Route::get('/order-confirmation', [CartController::class, 'order_confirmation'])->name('order.confirmation');
 

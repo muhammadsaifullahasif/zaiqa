@@ -6,5 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItemMeta extends Model
 {
-    //
+    protected $fillable = [
+        'order_item_id',
+        'meta_key',
+        'meta_value',
+    ];
+
+    public $timestamps = false;
 }

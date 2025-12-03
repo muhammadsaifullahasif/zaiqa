@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $appends = ['product_meta']; // Ensures this is included in JSON
+    protected $appends = ['product_meta', 'variations_count', 'variations']; // Ensures this is included in JSON
 
     /**
      * The "booted" method of the model.
@@ -40,7 +40,52 @@ class Product extends Model
     }
 
     public function variations() {
-        return $this->hasMany(Product::class, 'parent_id', 'id');
+        return $this->hasMany(Product::class, 'parent_id', 'id')
+            ->withoutGlobalScope(ParentProductScope::class)
+            ->with('product_meta');
+    }
+
+    // Accessor for variations
+    public function getVariationsAttribute()
+    {
+        return $this->variations()
+            ->get()
+            ->map(function ($variation) {
+                $variation->product_meta = $variation->getProductMetaAttribute(); // will use accessor
+                unset($variation->variations);
+                return $variation;
+            });
+    }
+
+    public function getVariationsCountAttribute() {
+        return $this->variations()->count();
+    }
+
+    // Get regular price (single variation or simple product)
+    public function getRegularPrice() {
+        if ($this->type === 'variable' && $this->variations_count == 1) {
+            $variation = $this->variations()->first();
+            return $variation->product_meta['regular_price'] ?? 0;
+        }
+        return $this->product_meta['regular_price'] ?? 0;
+    }
+
+    // Get sale price (single variation or simple product)
+    public function getSalePrice() {
+        if ($this->type === 'variable' && $this->variations_count == 1) {
+            $variation = $this->variations()->first();
+            return $variation->product_meta['sale_price'] ?? 0;
+        }
+        return $this->product_meta['sale_price'] ?? 0;
+    }
+
+    // Get price (single variation or simple product)
+    public function getPrice() {
+        if ($this->type === 'variable' && $this->variations_count == 1) {
+            $variation = $this->variations()->first();
+            return $variation->product_meta['price'] ?? 0;
+        }
+        return $this->product_meta['price'] ?? 0;
     }
 
     // Get min regular price for variable products
@@ -93,7 +138,7 @@ class Product extends Model
 
     // Get min regular price for variable products
     public function getMinPrice() {
-        if ($this->type === 'variable') {
+        if ($this->type == 'variable') {
             return $this->variations()
                 ->join('product_metas', 'products.id', '=', 'product_metas.product_id')
                 ->where('product_metas.meta_key', 'price')

@@ -69,9 +69,9 @@
                                     <img src="{{ asset('uploads/slides') }}/{{ $slide->image }}" alt="{{ $slide->title }}" class="image">
                                 </div>
                             </td>
-                            <td>{{ $slide->tagline }}</td>
-                            <td>{{ $slide->title }}</td>
-                            <td>{{ $slide->subtitle }}</td>
+                            <td>{{ \Str::limit($slide->tagline, 25) }}</td>
+                            <td>{{ \Str::limit($slide->title, 25) }}</td>
+                            <td>{{ \Str::limit($slide->subtitle, 25) }}</td>
                             <td class="slide-link" title="{{ $slide->link }}">{{ $slide->link }}</td>
                             <td>
                                 <div class="list-icon-function" style="justify-content: center;">

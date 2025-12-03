@@ -161,8 +161,8 @@
             {{-- CART HEADER END --}}
             {{-- CART SUMMARY START --}}
             <div class="cart-summary-wrapper py-lg-5 py-md-3">
-                <div class="container">
-                    <div class="row">
+                <div class="container" id="shopping-cart-wrapper">
+                    <div class="row" id="shopping-cart">
                         <div class="col-lg-8 mb-3">
                             <div class="cart-table mb-3">
                                 <div class="table-responsive">
@@ -176,7 +176,56 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
+                                            @foreach ($items as $item)
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex gap-2 info">
+                                                            <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->model->product_meta['thumbnail'] }}" class="w-100 rounded" alt="{{ $item->name }}">
+                                                            <div class="detail">
+                                                                <h4 class="title text-secondary">{{ $item->name }}</h4>
+                                                                <p class="text">{{ $item->options['unit'] }}{{ $item->model->product_meta['unit'] }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="product-quantity">
+                                                            <form id="qty-control__reduce_{{ $item->rowId }}">
+                                                                @csrf
+                                                                @method('PUT')
+                                                                <input type="hidden" value="{{ $item->rowId }}" name="rowId">
+                                                                <input type="hidden" value="decrease" name="operator" />
+                                                                {{-- <div class="btn quantity-decrement qty-control__reduce" data-id="{{ $item->rowId }}">-</div> --}}
+                                                                <button class="btn quantity-decrement qty-control__reduce" data-id="{{ $item->rowId }}" type="button">-</button>
+                                                            </form>
+                                                            <input type="number" id="quantity" name="quantity" class="quantity text-center" value="{{ $item->qty }}" min="1">
+                                                            {{-- <button class="btn quantity-increment" type="button">+</button> --}}
+                                                            <form id="qty-control__increase_{{ $item->rowId }}">
+                                                                @csrf
+                                                                @method('PUT')
+                                                                <input type="hidden" value="{{ $item->rowId }}" name="rowId">
+                                                                <input type="hidden" value="increase" name="operator" />
+                                                                {{-- <div class="btn quantity-increment qty-control__increase" data-id="{{ $item->rowId }}">+</div> --}}
+                                                                <button class="btn quantity-increment qty-control__increase" data-id="{{ $item->rowId }}" type="button">+</button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="price">€{{ $item->subTotal() }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <form id="remove_item_{{ $item->rowId }}">
+                                                            @csrf
+                                                            @method('delete')
+                                                            <input type="hidden" value="{{ $item->rowId }}" name="rowId" id="rowId_{{ $item->rowId }}">
+                                                            <a href="javascript:void(0)" data-id="{{ $item->rowId }}" class="btn btn-outline-primary btn-lg rounded-pill remove-cart">
+                                                                <i class="far fa-trash-can"></i> Delete
+                                                            </a>
+                                                            {{-- <button class="btn btn-outline-primary btn-lg rounded-pill"><i class="far fa-trash-can"></i> Delete</button> --}}
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                            {{-- <tr>
                                                 <td>
                                                     <div class="d-flex gap-2 info">
                                                         <img src="{{ asset('gallery-1.png') }}" class="w-100 rounded" alt="">
@@ -199,55 +248,7 @@
                                                 <td>
                                                     <button class="btn btn-outline-primary btn-lg rounded-pill"><i class="far fa-trash-can"></i> Delete</button>
                                                 </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex gap-2 info">
-                                                        <img src="{{ asset('gallery-1.png') }}" class="w-100 rounded" alt="">
-                                                        <div class="detail">
-                                                            <h4 class="title text-secondary">Chicken Masala</h4>
-                                                            <p class="text">Delight in our Chicken Chop Fries...</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="product-quantity">
-                                                        <button class="btn quantity-decrement" type="button">-</button>
-                                                        <input type="number" id="quantity" name="quantity" class="quantity text-center" value="1" min="1">
-                                                        <button class="btn quantity-increment" type="button">+</button>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <p class="price">€40.99</p>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-outline-primary btn-lg rounded-pill"><i class="far fa-trash-can"></i> Delete</button>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex gap-2 info">
-                                                        <img src="{{ asset('gallery-1.png') }}" class="w-100 rounded" alt="">
-                                                        <div class="detail">
-                                                            <h4 class="title text-secondary">Chicken Masala</h4>
-                                                            <p class="text">Delight in our Chicken Chop Fries...</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="product-quantity">
-                                                        <button class="btn quantity-decrement" type="button">-</button>
-                                                        <input type="number" id="quantity" name="quantity" class="quantity text-center" value="1" min="1">
-                                                        <button class="btn quantity-increment" type="button">+</button>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <p class="price">€40.99</p>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-outline-primary btn-lg rounded-pill"><i class="far fa-trash-can"></i> Delete</button>
-                                                </td>
-                                            </tr>
+                                            </tr> --}}
                                         </tbody>
                                     </table>
                                 </div>
@@ -270,31 +271,25 @@
                                     <div class="order-summary">
                                         <h6 class="fw-semibold">Order Summary</h6>
                                         <div class="order-product-list py-2">
-                                            <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
-                                                <p><strong>1x</strong> Chicken Masala</p>
-                                                <p>€40.99</p>
-                                            </div>
-                                            <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
-                                                <p><strong>2x</strong> Beef Karahi Masala</p>
-                                                <p>€80.99</p>
-                                            </div>
-                                            <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
-                                                <p><strong>3x</strong> Tikka Masala</p>
-                                                <p>€120.99</p>
-                                            </div>
-                                            <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
-                                                <p>Shipping fee</p>
-                                                <p>Free</p>
-                                            </div>
+                                            @foreach ($items as $item)
+                                                <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
+                                                    <p><strong>{{ $item->qty }}x</strong> {{ $item->name }} {{ $item->options['unit'] }}{{ $item->model->product_meta['unit'] }}</p>
+                                                    <p>€{{ $item->subTotal() }}</p>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="order-summary-total d-flex justify-content-between align-item-center">
+                                            <p>Tax</p>
+                                            <p>€{{ Cart::instance('cart')->tax() }}</p>
                                         </div>
                                         <div class="order-summary-total d-flex justify-content-between align-item-center">
                                             <p>Total</p>
-                                            <p>€240.99</p>
+                                            <p>€{{ Cart::instance('cart')->total() }}</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="card-footer">
-                                    <a href="#" class="btn btn-secondary w-100">Check Out</a>
+                                    <a href="{{ route('checkout.index') }}" class="btn btn-secondary w-100">Check Out</a>
                                 </div>
                             </div>
                         </div>
@@ -378,21 +373,58 @@
 
     <script>
         $(document).ready(function(){
-            $(document).on('click', '.quantity-increment', function(e){
-                e.preventDefault();
-                const input = $(this).siblings('.quantity');
-                let value = parseInt(input.val());
-                input.val(value + 1);
-            });
-
             $(document).on('click', '.quantity-decrement', function(e){
                 e.preventDefault();
-                const input = $(this).siblings('.quantity');
+                const input = $(this).closest('.product-quantity').find('.quantity');
                 let value = parseInt(input.val());
                 const min = parseInt(input.attr('min')) || 1;
                 if (value > min) {
                     input.val(value - 1);
                 }
+                $.ajax({
+                    url: `{{ route('cart.update.qty') }}`,
+                    method: 'POST',
+                    data: $('#qty-control__reduce_' + $(this).data('id')).serialize(),
+                    success: function(result) {
+                        // if(result.status == 'success') {
+                            $('#shopping-cart-wrapper').load(location.href + ' #shopping-cart');
+                        // }
+                    }
+                });
+            });
+
+            $(document).on('click', '.quantity-increment', function(e){
+                e.preventDefault();
+                const input = $(this).closest('.product-quantity').find('.quantity');
+                let value = parseInt(input.val());
+                input.val(value + 1);
+
+                $.ajax({
+                    url: `{{ route('cart.update.qty') }}`,
+                    method: 'POST',
+                    data: $('#qty-control__increase_' + $(this).data('id')).serialize(),
+                    success: function(result) {
+                        // if(result.status == 'success') {
+                            $('#shopping-cart-wrapper').load(location.href + ' #shopping-cart');
+                        // }
+                    }
+                });
+            });
+
+            $(document).on('click', '.remove-cart', function(){
+                // var form = $(this).closest('form');
+                var id = $(this).data('id');
+                var url_path = "{{ route('cart.remove.item', ":id") }}".replace(':id', id);
+                $.ajax({
+                    url: url_path,
+                    method: 'POST',
+                    data: $('#remove_item_' + $(this).data('id')).serialize(),
+                    success: function(result) {
+                        // if(result.status == 'success') {
+                            $('#shopping-cart-wrapper').load(location.href + ' #shopping-cart');
+                        // }
+                    }
+                });
             });
         });
     </script>

@@ -8,30 +8,35 @@ use App\Models\Address;
 use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\Transaction;
+use App\Models\OrderAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use App\Models\Scopes\ParentProductScope;
 use Surfsidemedia\Shoppingcart\Facades\Cart;
 
 class CartController extends Controller
 {
-    public function index() {
+    public function index() 
+    {
         $items = Cart::instance('cart')->content();
         // return $items;
         return view('cart', compact('items'));
     }
 
-    public function add_to_cart(Request $request) {
+    public function add_to_cart(Request $request) 
+    {
         // return dd($request->all());
-        $product = Product::findOrFail($request->variation_id);
+        $product = Product::withoutGlobalScope(ParentProductScope::class)->findOrFail($request->variation_id);
         $price = $product->product_meta['price'] ?? 0;
         $vat = $product->product_meta['vat'] ?? 0;
         Cart::instance('cart')->add($request->product_id, $product->title, $request->quantity, $price, ['unit' => $product->product_meta['unit']], $vat)->associate('App\Models\Product');
         return redirect()->back()->with('success', 'Product has been added to cart!');
     }
 
-    public function update_cart_qty(Request $request) {
+    public function update_cart_qty(Request $request) 
+    {
         $product = Cart::instance('cart')->get($request->rowId);
         if($request->operator == 'increase') {
             $qty = $product->qty + 1;
@@ -43,17 +48,20 @@ class CartController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    public function remove_cart_item($id) {
+    public function remove_cart_item($id) 
+    {
         Cart::instance('cart')->remove($id);
         return response()->json(['status' => 'success']);
     }
 
-    public function empty_cart() {
+    public function empty_cart() 
+    {
         Cart::instance('cart')->destroy();
         return redirect()->back();
     }
 
-    public function apply_coupon_code(Request $request) {
+    public function apply_coupon_code(Request $request) 
+    {
         $coupon_code = $request->coupon_code;
         if(isset($coupon_code)) {
             $coupon = Coupon::where('code', $coupon_code)->where('expiry_date', '>=', Carbon::today())->where('cart_value', '<=', Cart::instance('cart')->subtotal())->first();
@@ -74,7 +82,8 @@ class CartController extends Controller
         }
     }
 
-    public function calculate_discount() {
+    public function calculate_discount() 
+    {
         $discount = 0;
         if(Session::has('coupon')) {
             if(Session::get('coupon')['type'] == 'fixed') {
@@ -96,101 +105,167 @@ class CartController extends Controller
         }
     }
 
-    public function remove_coupon_code() {
+    public function remove_coupon_code() 
+    {
         Session::forget('coupon');
         Session::forget('discounts');
         return redirect()->back();
     }
 
-    public function checkout() {
+    public function checkout($order_id = null)
+    {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $address = Address::where('user_id', Auth::user()->id)->where('isdefault', 1)->first();
+        // Generate time slots
+        $timeSlots = [];
+        $currentTime = now();
+
+        // Round down to previous 30-minute interval
+        $minutes = $currentTime->minute;
+        $roundedMinutes = $minutes < 30 ? 0 : 30;
+        $currentTime->minute = $roundedMinutes;
+        $currentTime->second = 0;
+
+        $endTime = now()->endOfDay();
+
+        while ($currentTime <= $endTime) {
+            $startTime = $currentTime->copy();
+            $endTimeSlot = $currentTime->copy()->addMinutes(30);
+
+            $timeSlots[] = $startTime->format('h:i A') . ' - ' . $endTimeSlot->format('h:i A');
+
+            $currentTime->addMinutes(30);
+        }
+
+        $address = OrderAddress::where('customer_id', Auth::user()->id)->where('is_default', 1)->first();
         $items = Cart::instance('cart')->content();
-        return view('checkout', compact('address', 'items'));
+
+        // Get order details if order_id is provided
+        $order = null;
+        if ($order_id) {
+            $order = Order::find($order_id);
+        }
+
+        // return $order;
+
+        return view('checkout', compact('address', 'items', 'timeSlots', 'order'));
     }
 
-    public function place_order(Request $request) {
+    public function place_order(Request $request) 
+    {
+        // dd($request->all());
+        // $items = Cart::instance('cart')->content();
+        // return $items;
+        // die();
+
+        $validate = [
+            'name' => 'required|max:100',
+            'phone' => 'required',
+            'email' => 'required|email',
+            'order_type' => 'required|in:delivery,pickup',
+            'payment_gateway' => 'required|in:sumup,stripe,cod',
+        ];
+        if ($request->order_type == 'delivery') {
+            $validate['delivery_time_slot'] = 'required';
+            $validate['zipcode'] = 'required';
+            $validate['city_town'] = 'required';
+            $validate['address'] = 'required';
+            $delivery_time = $request->delivery_time_slot;
+            $pickup_time = '';
+        } else if ($request->order_type == 'pickup') {
+            $validate['pickup_time'] = 'required';
+            $delivery_time = '';
+            $pickup_time = $request->pickup_time;
+        }
+        $request->validate($validate);
+
+        $currency = settings('default_currency', '');
+
         $user_id = Auth::user()->id;
-        $address = Address::where('user_id', $user_id)->where('isdefault', 1)->first();
+        $address = OrderAddress::where('customer_id', $user_id)->where('is_default', 1)->first();
 
         if(!$address) {
-            $request->validate([
-                'name' => 'required|max:100',
-                'phone' => 'required|numeric|digits:10',
-                'zip' => 'required|numeric|digits:5',
-                'state' => 'required',
-                'city' => 'required',
-                'address' => 'required',
-                'locality' => 'required',
-                'landmark' => 'required',
-            ]);
-
-            $address = new Address();
-            $address->name = $request->name;
+            $address = new OrderAddress();
+            $address->first_name = $request->name;
             $address->phone = $request->phone;
-            $address->zip = $request->zip;
-            $address->state = $request->state;
-            $address->city = $request->city;
-            $address->address = $request->address;
-            $address->locality = $request->locality;
-            $address->landmark = $request->landmark;
-            $address->country = 'Pakistan';
-            $address->user_id = $user_id;
-            $address->isdefault = true;
+            $address->address_1 = $request->address;
+            $address->city = $request->city_town;
+            $address->zipcode = $request->zipcode;
+            $address->customer_id = $user_id;
+            $address->is_default = true;
             $address->save();
         }
 
         $order = new Order();
-        $order->user_id = $user_id;
-        $order->subtotal = Session::has('discounts') ? Session::get('discounts')['subtotal'] : Cart::instance('cart')->subtotal();
-        $order->discount = Session::has('discounts') ? Session::get('discounts')['discount'] : 0;
-        $order->tax = Session::has('discounts') ? Session::get('discounts')['tax'] : Cart::instance('cart')->tax();
-        $order->total = Session::has('discounts') ? Session::get('discounts')['total'] : Cart::instance('cart')->total();
-        $order->name = $address->name;
-        $order->phone = $address->phone;
-        $order->locality = $address->locality;
-        $order->address = $address->address;
-        $order->city = $address->city;
-        $order->state = $address->state;
-        $order->country = $address->country;
-        $order->landmark = $address->landmark;
-        $order->zip = $address->zip;
+        $order->customer_id = $user_id;
+        $order->address_id = $address->id;
+        $order->order_total = floatval(str_replace(',', '', Cart::instance('cart')->total()));
+        $order->order_type = $request->order_type;
         $order->save();
+
+        $order->order_meta()->createMany([
+            ['meta_key' => 'delivery_time', 'meta_value' => $delivery_time],
+            ['meta_key' => 'pickup_time', 'meta_value' => $pickup_time],
+        ]);
 
         foreach(Cart::instance('cart')->content() as $item) {
             $orderItem = new OrderItem();
-            $orderItem->product_id = $item->id;
             $orderItem->order_id = $order->id;
-            $orderItem->price = $item->price;
-            $orderItem->quantity = $item->qty;
+            $orderItem->product_id = $item->id;
+            $orderItem->qty = $item->qty;
             $orderItem->save();
+
+            $orderItem->order_item_meta()->createMany([
+                ['meta_key' => 'title', 'meta_value' => $item->name],
+                ['meta_key' => 'price', 'meta_value' => $item->price],
+                ['meta_key' => 'vat', 'meta_value' => $item->tax],
+                ['meta_key' => 'unit', 'meta_value' => $item->options['unit']],
+                ['meta_key' => 'unitSymbol', 'meta_value' => $item->model->product_meta['unit']],
+            ]);
+
+            $product = Product::withoutGlobalScope(ParentProductScope::class)->findOrFail($item->id);
+            $new_quantity = $product->product_meta['quantity'] - $item->qty;
+            $product->product_meta()->upsert(
+                [
+                    ['meta_key' => 'quantity', 'meta_value' => $new_quantity],
+                ],
+                ['product_id', 'meta_key'],
+                ['meta_value']
+            );
         }
 
-        if($request->mode == 'card') {
+        if($request->payment_gateway == 'sumup') {
             //
-        } else if($request->mode == 'paypal') {
-            //
-        } else if($request->mode == 'cod') {
+        } else if($request->payment_gateway == 'stripe') {
             $transaction = new Transaction();
-            $transaction->user_id = $user_id;
+            $transaction->customer_id = $user_id;
             $transaction->order_id = $order->id;
-            $transaction->mode = $request->mode;
+            $transaction->mode = $request->payment_gateway;
             $transaction->status = 'pending';
             $transaction->save();
+
+            $transaction->transaction_meta()->createMany([
+                ['meta_key' => 'currency', 'meta_value' => $currency],
+                ['meta_key' => 'subtotal', 'meta_value' => Cart::instance('cart')->subtotal()],
+                ['meta_key' => 'discount', 'meta_value' => '0'],
+                ['meta_key' => 'tax', 'meta_value' => Cart::instance('cart')->tax()],
+                ['meta_key' => 'total', 'meta_value' => Cart::instance('cart')->total()],
+            ]);
+        } else if($request->payment_gateway == 'cod') {
+            //
         }
 
         Cart::instance('cart')->destroy();
-        Session::forget('coupons');
-        Session::forget('discounts');
 
         Session::put('order_id', $order->id);
-        return redirect()->route('order.confirmation');
+        return redirect()->route('checkout.index', $order->id);
+        // return redirect()->route('order.confirmation');
     }
 
-    public function order_confirmation() {
+    public function order_confirmation() 
+    {
         if(Session::has('order_id')) {
             $order = Order::find(Session::get('order_id'));
             return view('order-confirmation', compact('order'));

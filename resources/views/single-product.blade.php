@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <base href="{{ url('/') }}/">
     <title>Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
 
@@ -273,10 +274,33 @@
                                 <p class="text">{{ $product->short_description }}</p>
                                 <div class="price-container">
                                     @if ($product->isOnSale())
-                                        <span class="price">€ <span>{{ $product->getMinSalePrice() }}-{{ $product->getMaxSalePrice() }}</span></span>
-                                        <span class="regular-price"><s>€ <span>{{ $product->getMinRegularPrice() }}-{{ $product->getMaxRegularPrice() }}</span></s></span>
+                                        <span class="price">€ 
+                                            <span>
+                                                @if ($product->variations_count > 1)
+                                                    {{ $product->getMinSalePrice() }}-{{ $product->getMaxSalePrice() }}
+                                                @else
+                                                    {{ $product->getSalePrice() }}
+                                                @endif
+                                            </span>
+                                        </span>
+                                        <span class="regular-price"><s>€ 
+                                            <span>
+                                                @if ($product->variations_count > 1)
+                                                    {{ $product->getMinRegularPrice() }}-{{ $product->getMaxRegularPrice() }}
+                                                @else
+                                                @endif
+                                            </span>
+                                        </s></span>
                                     @else
-                                        <span class="price">€ <span>{{ $product->getMinPrice() }}-{{ $product->getMaxPrice() }}</span></span>
+                                        <span class="price">€ 
+                                            <span>
+                                                @if ($product->variations_count > 1)
+                                                    {{ $product->getMinPrice() }}-{{ $product->getMaxPrice() }}
+                                                @else
+                                                    {{ $product->getPrice() }}                                                
+                                                @endif
+                                            </span>
+                                        </span>
                                     @endif
                                 </div>
                                 <p class="text">Limited Time Offer Free Delivery On Orders €35+</p>
@@ -348,7 +372,7 @@
                                             <button class="btn quantity-increment" type="button">+</button>
                                         </div>
                                         
-                                        <button class="btn btn-primary product-add-to-cart-btn w-100">
+                                        <button type="submit" class="btn btn-primary product-add-to-cart-btn w-100">
                                             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.52148 2.97949L4.42815 3.30949L5.3109 13.8264C5.34481 14.2403 5.53351 14.6261 5.83934 14.907C6.14518 15.1878 6.54567 15.343 6.9609 15.3417H16.9617C17.3593 15.3421 17.7437 15.199 18.0442 14.9386C18.3446 14.6782 18.541 14.3181 18.5971 13.9245L19.4679 7.91299C19.4911 7.75312 19.4826 7.59023 19.4428 7.43366C19.403 7.27708 19.3328 7.12988 19.236 7.00047C19.1393 6.87107 19.0181 6.762 18.8792 6.6795C18.7403 6.59699 18.5865 6.54268 18.4266 6.51966C18.3679 6.51324 4.73432 6.50866 4.73432 6.50866" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.9492 9.89551H15.4911" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M6.55932 18.52C6.62655 18.5171 6.69366 18.5279 6.75662 18.5516C6.81958 18.5753 6.87708 18.6116 6.92567 18.6581C6.97425 18.7047 7.01292 18.7606 7.03933 18.8224C7.06575 18.8843 7.07936 18.9509 7.07936 19.0182C7.07936 19.0855 7.06575 19.1521 7.03933 19.214C7.01292 19.2758 6.97425 19.3317 6.92567 19.3783C6.87708 19.4248 6.81958 19.4611 6.75662 19.4848C6.69366 19.5085 6.62655 19.5193 6.55932 19.5164C6.43089 19.5109 6.30954 19.456 6.22061 19.3632C6.13168 19.2703 6.08203 19.1468 6.08203 19.0182C6.08203 18.8896 6.13168 18.7661 6.22061 18.6732C6.30954 18.5804 6.43089 18.5255 6.55932 18.52Z" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M16.9 18.5195C17.0325 18.5195 17.1595 18.5722 17.2532 18.6659C17.3469 18.7595 17.3996 18.8866 17.3996 19.0191C17.3996 19.1516 17.3469 19.2787 17.2532 19.3724C17.1595 19.4661 17.0325 19.5187 16.9 19.5187C16.7675 19.5187 16.6404 19.4661 16.5467 19.3724C16.453 19.2787 16.4004 19.1516 16.4004 19.0191C16.4004 18.8866 16.453 18.7595 16.5467 18.6659C16.6404 18.5722 16.7675 18.5195 16.9 18.5195Z" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                             Add to Cart
                                         </button>
@@ -478,7 +502,7 @@
                                     <div class="card-body">
                                         <div class="card-title d-flex justify-content-between">
                                             <a href="{{ route('shop.product.detail', $rProduct->slug) }}"><h3 class="product-title fw-bold text-secondary">{{ $rProduct->title }}</h3></a>
-                                            <p class="product-price fw-bold text-secondary"><span>€</span> 40</p>
+                                            <p class="product-price fw-bold text-secondary"><span>€</span> {{ $product->getMinPrice() }}<span class="product-unit">/{{ $product->getMinUnit() }} {{ $product->product_meta['unit'] }}</span></p>
                                         </div>
                                         <p class="card-text product-short-description">{{ $rProduct->short_description }}</p>
                                         <div class="product-footer d-flex justify-content-between">
