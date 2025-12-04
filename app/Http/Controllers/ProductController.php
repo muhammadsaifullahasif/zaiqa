@@ -239,7 +239,7 @@ class ProductController extends Controller
                 $this->GenerateProductThumbnailImage($image, $imageName);
                 $product->product_meta()->upsert(
                     [
-                        ['meta_key' => 'thumbnail', 'meta_value' => $imageName],
+                        ['product_id' => $product->id, 'meta_key' => 'thumbnail', 'meta_value' => $imageName],
                     ],
                     ['product_id', 'meta_key'],
                     ['meta_value']
@@ -253,7 +253,7 @@ class ProductController extends Controller
 
                 $product->product_meta()->upsert(
                     [
-                        ['meta_key' => 'gallery', 'meta_value' => $gallery_images],
+                        ['product_id' => $product->id, 'meta_key' => 'gallery', 'meta_value' => $gallery_images],
                     ],
                     ['product_id', 'meta_key'],
                     ['meta_value']
@@ -262,7 +262,7 @@ class ProductController extends Controller
 
             $product->product_meta()->upsert(
                 [
-                    ['meta_key' => 'unit', 'meta_value' => $request->unit],
+                    ['product_id' => $product->id, 'meta_key' => 'unit', 'meta_value' => $request->unit],
                 ],
                 ['product_id', 'meta_key'],
                 ['meta_value']
@@ -300,7 +300,7 @@ class ProductController extends Controller
 
                     $product_variation->product_meta()->upsert(
                         [
-                            ['meta_key' => 'thumbnail', 'meta_value' => $v_imageName],
+                            ['product_id' => $product_variation->id, 'meta_key' => 'thumbnail', 'meta_value' => $v_imageName],
                         ],
                         ['product_id', 'meta_key'],
                         ['meta_value']
@@ -310,13 +310,13 @@ class ProductController extends Controller
 
                 $product_variation->product_meta()->upsert(
                     [
-                        ['meta_key' => 'unit', 'meta_value' => $request->variations['unit'][$index]],
-                        ['meta_key' => 'regular_price', 'meta_value' => $request->variations['regular_price'][$index]],
-                        ['meta_key' => 'sale_price', 'meta_value' => $request->variations['sale_price'][$index] ?? ''],
-                        ['meta_key' => 'price', 'meta_value' => $request->variations['sale_price'][$index] ?? $request->variations['regular_price'][$index]],
-                        ['meta_key' => 'quantity', 'meta_value' => $request->variations['quantity'][$index]],
-                        ['meta_key' => 'SKU', 'meta_value' => $request->variations['SKU'][$index]],
-                        ['meta_key' => 'vat', 'meta_value' => $request->variations['vat'][$index]]
+                        ['product_id' => $product_variation->id, 'meta_key' => 'unit', 'meta_value' => $request->variations['unit'][$index]],
+                        ['product_id' => $product_variation->id, 'meta_key' => 'regular_price', 'meta_value' => $request->variations['regular_price'][$index]],
+                        ['product_id' => $product_variation->id, 'meta_key' => 'sale_price', 'meta_value' => $request->variations['sale_price'][$index] ?? ''],
+                        ['product_id' => $product_variation->id, 'meta_key' => 'price', 'meta_value' => $request->variations['sale_price'][$index] ?? $request->variations['regular_price'][$index]],
+                        ['product_id' => $product_variation->id, 'meta_key' => 'quantity', 'meta_value' => $request->variations['quantity'][$index]],
+                        ['product_id' => $product_variation->id, 'meta_key' => 'SKU', 'meta_value' => $request->variations['SKU'][$index]],
+                        ['product_id' => $product_variation->id, 'meta_key' => 'vat', 'meta_value' => $request->variations['vat'][$index]]
                     ],
                     ['product_id', 'meta_key'],
                     ['meta_value']

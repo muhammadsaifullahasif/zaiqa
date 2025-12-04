@@ -13,7 +13,7 @@ class Order extends Model
         'status', 'delivered_date', 'canceled_date'
     ];
 
-    protected $with = ['transaction'];
+    protected $with = ['transaction', 'order_address', 'user'];
 
     protected $appends = ['order_meta', 'order_items'];
 
@@ -22,7 +22,7 @@ class Order extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'customer_id');
     }
 
     public function order_meta()
@@ -56,5 +56,9 @@ class Order extends Model
 
     public function getOrderItemsAttribute() {
         return $this->order_items()->get();
+    }
+
+    public function order_address() {
+        return $this->belongsTo(OrderAddress::class, 'address_id');
     }
 }

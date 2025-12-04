@@ -2529,7 +2529,7 @@ input[type="radio"]:active {
     background-color: rgba(100, 108, 60, 0.1);
 }
 
-.order-detail-item .col-lg-4:not(:first-child) {
+.order-detail-item > div:not(:first-child) {
     border-left: 1px solid rgba(54, 65, 83, 0.1);
 }
 

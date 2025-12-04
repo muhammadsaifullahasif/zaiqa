@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $appends = ['product_meta', 'variations_count', 'variations']; // Ensures this is included in JSON
+    protected $with = ['product_meta'];
+
+    protected $appends = ['variations_count']; // Ensures this is included in JSON
 
     /**
      * The "booted" method of the model.
@@ -23,12 +25,50 @@ class Product extends Model
         return $this->hasMany(ProductMeta::class, 'product_id', 'id');
     }
 
-    public function getProductMetaAttribute() {
-        return $this->product_meta()
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->meta_key => $item->meta_value];
-            });
+    /**
+     * Override attribute retrieval to transform product_meta
+     */
+    public function getAttribute($key)
+    {
+        // For product_meta, ensure relationship is loaded and transform it
+        if ($key === 'product_meta') {
+            // Load the relationship if not already loaded
+            if (!$this->relationLoaded('product_meta')) {
+                $this->load('product_meta');
+            }
+
+            $value = $this->getRelation('product_meta');
+
+            // Transform to key-value pairs
+            if ($value instanceof \Illuminate\Database\Eloquent\Collection) {
+                return ProductMeta::toKeyValue($value);
+            }
+
+            return $value;
+        }
+
+        return parent::getAttribute($key);
+    }
+
+    /**
+     * Override array conversion to include transformed product_meta
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        // Ensure product_meta is transformed in array output
+        if (isset($array['product_meta']) && is_array($array['product_meta'])) {
+            // If it's already an array of meta objects, transform it
+            if (isset($array['product_meta'][0]['meta_key'])) {
+                $collection = collect($array['product_meta']);
+                $array['product_meta'] = $collection->mapWithKeys(function ($item) {
+                    return [$item['meta_key'] => $item['meta_value']];
+                })->toArray();
+            }
+        }
+
+        return $array;
     }
 
     public function category() {
@@ -46,16 +86,16 @@ class Product extends Model
     }
 
     // Accessor for variations
-    public function getVariationsAttribute()
-    {
-        return $this->variations()
-            ->get()
-            ->map(function ($variation) {
-                $variation->product_meta = $variation->getProductMetaAttribute(); // will use accessor
-                unset($variation->variations);
-                return $variation;
-            });
-    }
+    // public function getVariationsAttribute()
+    // {
+    //     return $this->variations()
+    //         ->get()
+    //         ->map(function ($variation) {
+    //             $variation->product_meta = $variation->getProductMetaAttribute(); // will use accessor
+    //             unset($variation->variations);
+    //             return $variation;
+    //         });
+    // }
 
     public function getVariationsCountAttribute() {
         return $this->variations()->count();

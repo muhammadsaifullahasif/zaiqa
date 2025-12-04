@@ -349,29 +349,29 @@
                                         @foreach ($order->order_items as $item)
                                             <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
                                                 <p><strong>{{ $item->qty }}x</strong> {{ $item->order_item_meta['title'] }} {{ $item->order_item_meta['unit'] }}{{ $item->order_item_meta['unitSymbol'] }}</p>
-                                                <p>({{ $order->transaction->transaction_meta['currency'] }}) {{ ($item->qty * $item->order_item_meta['price']) }}</p>
+                                                <p>({{ $order->transaction->transaction_meta['currency_symbol'] }}) {{ ($item->qty * $item->order_item_meta['price']) }}</p>
                                             </div>
                                         @endforeach
                                     </div>
                                     <div class="order-summary-total d-flex justify-content-between align-item-center">
                                         <p>Subtotal</p>
-                                        <p>({{ $order->transaction->transaction_meta['currency'] }}) {{ $order->transaction->transaction_meta['subtotal'] }}</p>
+                                        <p>({{ $order->transaction->transaction_meta['currency_symbol'] }}) {{ $order->transaction->transaction_meta['subtotal'] }}</p>
                                     </div>
                                     <div class="order-summary-total d-flex justify-content-between align-item-center">
                                         <p>Tax</p>
-                                        <p>({{ $order->transaction->transaction_meta['currency'] }}) {{ $order->transaction->transaction_meta['tax'] }}</p>
+                                        <p>({{ $order->transaction->transaction_meta['currency_symbol'] }}) {{ $order->transaction->transaction_meta['tax'] }}</p>
                                     </div>
                                     <div class="order-summary-total d-flex justify-content-between align-item-center">
                                         <p>Total</p>
-                                        <p>({{ $order->transaction->transaction_meta['currency'] }}) {{ $order->transaction->transaction_meta['total'] }}</p>
+                                        <p>({{ $order->transaction->transaction_meta['currency_symbol'] }}) {{ $order->transaction->transaction_meta['total'] }}</p>
                                     </div>
                                 </div>
                                 <div class="row g-2">
                                     <div class="col">
-                                        <a href="#" class="btn btn-primary btn-lg w-100 rounded-pill">Track Order</a>
+                                        <a href="{{ route('user.order.detail', $order->id) }}" class="btn btn-primary btn-lg w-100 rounded-pill">Track Order</a>
                                     </div>
                                     <div class="col">
-                                        <a href="#" class="btn btn-secondary btn-lg w-100 rounded-pill">Explore More</a>
+                                        <a href="{{ route('shop.index') }}" class="btn btn-secondary btn-lg w-100 rounded-pill">Explore More</a>
                                     </div>
                                 </div>
                             </div>

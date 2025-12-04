@@ -99,6 +99,11 @@ class CheckoutSettingController extends Controller
             settings()->set('free_delivery_threshold', $request->free_delivery_threshold);
             settings()->set('default_currency', $request->default_currency);
 
+            // Get currency symbol from config based on currency code
+            $currencyData = config('currencies.' . $request->default_currency);
+            $currencySymbol = $currencyData['symbol'] ?? '$';
+            settings()->set('currency_symbol', $currencySymbol);
+
             return redirect()->back()->with('checkout_setting_status', 'Checkout settings saved successfully');
         } catch (\Exception $e) {
             return redirect()->back()->with('checkout_setting_error', 'Error: ' . $e->getMessage());

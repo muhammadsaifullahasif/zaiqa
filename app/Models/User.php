@@ -34,7 +34,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $appends = ['product_meta']; // Ensures this is included in JSON
+    protected $appends = ['user_meta']; // Ensures this is included in JSON
 
     /**
      * Get the attributes that should be cast.

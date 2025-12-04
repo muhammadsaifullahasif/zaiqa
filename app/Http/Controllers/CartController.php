@@ -21,18 +21,27 @@ class CartController extends Controller
     public function index() 
     {
         $items = Cart::instance('cart')->content();
+        // Cart::instance('cart')->destroy();
         // return $items;
         return view('cart', compact('items'));
     }
 
     public function add_to_cart(Request $request) 
     {
-        // return dd($request->all());
-        $product = Product::withoutGlobalScope(ParentProductScope::class)->findOrFail($request->variation_id);
-        $price = $product->product_meta['price'] ?? 0;
-        $vat = $product->product_meta['vat'] ?? 0;
-        Cart::instance('cart')->add($request->product_id, $product->title, $request->quantity, $price, ['unit' => $product->product_meta['unit']], $vat)->associate('App\Models\Product');
-        return redirect()->back()->with('success', 'Product has been added to cart!');
+        try {
+            // return dd($request->all());
+            $product = Product::withoutGlobalScope(ParentProductScope::class)->findOrFail($request->variation_id);
+            $price = $product->product_meta['price'] ?? 0;
+            $vat = $product->product_meta['vat'] ?? 0;
+            if ($request->quantity <= $product->product_meta['quantity']) {
+                Cart::instance('cart')->add($request->product_id, $product->title, $request->quantity, $price, ['variation_id' => $request->variation_id, 'unit' => $product->product_meta['unit']], $vat)->associate('App\Models\Product');
+                return redirect()->back()->with('success', 'Product has been added to cart!');
+            } else {
+                return redirect()->back()->with('error', 'Product quantity is not available!');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function update_cart_qty(Request $request) 
@@ -182,6 +191,7 @@ class CartController extends Controller
         $request->validate($validate);
 
         $currency = settings('default_currency', '');
+        $currency_symbol = settings('currency_symbol', '');
 
         $user_id = Auth::user()->id;
         $address = OrderAddress::where('customer_id', $user_id)->where('is_default', 1)->first();
@@ -211,9 +221,14 @@ class CartController extends Controller
         ]);
 
         foreach(Cart::instance('cart')->content() as $item) {
+            // Get the actual variation product (the associated model)
+            $product = Product::withoutGlobalScope(ParentProductScope::class)->find($item->options['variation_id']);
+            // $variation = $item->model;
+            // dd($variation);
+
             $orderItem = new OrderItem();
             $orderItem->order_id = $order->id;
-            $orderItem->product_id = $item->id;
+            $orderItem->product_id = $item->id; // Store the actual variation ID
             $orderItem->qty = $item->qty;
             $orderItem->save();
 
@@ -225,11 +240,12 @@ class CartController extends Controller
                 ['meta_key' => 'unitSymbol', 'meta_value' => $item->model->product_meta['unit']],
             ]);
 
-            $product = Product::withoutGlobalScope(ParentProductScope::class)->findOrFail($item->id);
-            $new_quantity = $product->product_meta['quantity'] - $item->qty;
+            // Update the variation's quantity (not the parent product)
+            $current_quantity = $product->product_meta['quantity'] ?? 0;
+            $new_quantity = $current_quantity - $item->qty;
             $product->product_meta()->upsert(
                 [
-                    ['meta_key' => 'quantity', 'meta_value' => $new_quantity],
+                    ['product_id' => $product->id, 'meta_key' => 'quantity', 'meta_value' => $new_quantity],
                 ],
                 ['product_id', 'meta_key'],
                 ['meta_value']
@@ -248,6 +264,7 @@ class CartController extends Controller
 
             $transaction->transaction_meta()->createMany([
                 ['meta_key' => 'currency', 'meta_value' => $currency],
+                ['meta_key' => 'currency_symbol', 'meta_value' => $currency_symbol],
                 ['meta_key' => 'subtotal', 'meta_value' => Cart::instance('cart')->subtotal()],
                 ['meta_key' => 'discount', 'meta_value' => '0'],
                 ['meta_key' => 'tax', 'meta_value' => Cart::instance('cart')->tax()],
@@ -264,10 +281,11 @@ class CartController extends Controller
         // return redirect()->route('order.confirmation');
     }
 
-    public function order_confirmation() 
+    public function order_confirmation(string $id) 
     {
-        if(Session::has('order_id')) {
-            $order = Order::find(Session::get('order_id'));
+        $order = Order::find($id);
+        if($order) {
+            // $order = Order::find(Session::get('order_id'));
             return view('order-confirmation', compact('order'));
         }
         return redirect()->route('cart.index');

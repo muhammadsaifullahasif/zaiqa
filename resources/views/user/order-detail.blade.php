@@ -163,67 +163,72 @@
             <div class="order-detail-wrapper py-lg-5 py-md-3">
                 <div class="container">
                     <div class="track mb-5">
-                        <div class="step active"> <span class="icon">1</span> <span class="text">Preparing</span> </div>
-                        <div class="step"> <span class="icon">2</span> <span class="text">Order Ready</span> </div>
-                        <div class="step"> <span class="icon">3</span> <span class="text">Completed</span> </div>
+                        <div class="step @if ($order->order_status == 'processing' || $order->order_status == 'ready' || $order->order_status == 'completed') active @endif"> <span class="icon">1</span> <span class="text">Preparing</span> </div>
+                        <div class="step @if ($order->order_status == 'ready' || $order->order_status == 'completed') active @endif"> <span class="icon">2</span> <span class="text">Order Ready</span> </div>
+                        <div class="step @if ($order->order_status == 'completed') active @endif"> <span class="icon">3</span> <span class="text">Completed</span> </div>
                     </div>
                     <div class="order-status text-center my-3 mt-5">
                         <p class="text-primary">Estimated Delivery</p>
                         <h3 class="fw-bold text-secondary">Standard (8-12 hours)</h3>
-                        <img src="{{ asset('assets/images/ready-for-dispatch.svg') }}" class="mb-3" alt="">
-                        <img src="{{ asset('assets/images/on-the-way.svg') }}" class="mb-3 d-none" alt="">
-                        <img src="{{ asset('assets/images/ready-for-pickup.svg') }}" class="mb-3 d-none" alt="">
-                        <img src="{{ asset('assets/images/order-successfull.svg') }}" class="mb-3 d-none" alt="">
-                        <h4 class="fw-bold">Ready for Dispatch</h4>
-                        <h4 class="fw-bold d-none">Order On The Way</h4>
-                        <h4 class="fw-bold d-none">Ready For Pickup</h4>
-                        <h4 class="fw-bold d-none">Order Delivered!</h4>
+                        @if ($order->order_status == 'processing')
+                            <img src="{{ asset('assets/images/ready-for-dispatch.svg') }}" class="mb-3" alt="">
+                            <h4 class="fw-bold">Ready for Dispatch</h4>
+                        @elseif ($order->order_type == 'delivery' && $order->order_status == 'ready')
+                            <img src="{{ asset('assets/images/on-the-way.svg') }}" class="mb-3" alt="">
+                            <h4 class="fw-bold">Order On The Way</h4>
+                        @elseif ($order->order_type == 'pickup' && $order->order_status == 'ready')
+                            <img src="{{ asset('assets/images/ready-for-pickup.svg') }}" class="mb-3" alt="">
+                            <h4 class="fw-bold">Ready For Pickup</h4>
+                        @elseif ($order->order_status == 'completed')
+                            <img src="{{ asset('assets/images/order-successfull.svg') }}" class="mb-3" alt="">
+                            <h4 class="fw-bold">Order Delivered!</h4>
+                        @endif
                     </div>
                     <div class="order-detail-list">
                         <div class="order-detail-item rounded-4 mb-3 row">
                             <div class="col-12 p-4 py-5">
                                 <p class="d-flex justify-content-between align-items-center">
                                     <span>Order Number:</span>
-                                    <strong>#12345 <i class="fas fa-copy text-primary"></i></strong>
+                                    <strong>#{{ $order->id }} <i class="fas fa-copy text-primary"></i></strong>
                                 </p>
                                 <p class="d-flex justify-content-between align-items-center">
                                     <span>Date:</span>
-                                    <strong>10 August 2025</strong>
+                                    <strong>{{ \Carbon\Carbon::parse($order->created_at)->format('M d, Y') }}</strong>
                                 </p>
                             </div>
                         </div>
                         <div class="order-detail-item rounded-4 mb-3 row">
-                            <div class="col-lg-4 p-4 py-5">
+                            <div class="col-lg-6 p-4 py-5">
                                 <h4 class="text-secondary mb-3">Contact Info</h4>
                                 <p class="d-flex justify-content-between align-items-center">
                                     <span>Full Name:</span>
-                                    <span>Hella Den H</span>
+                                    <span>{{ (!empty($order->order_address->first_name) || !empty($order->order_address->last_name)) ? ( ($order->order_address->first_name ?? '') . ' ' . ($order->order_address->last_name ?? '') ) : '' }}</span>
                                 </p>
                                 <p class="d-flex justify-content-between align-items-center">
                                     <span>Phone Number:</span>
-                                    <span>+49 (1726) 086-408</span>
+                                    <span>{{ $order->order_address['phone'] ?? '' }}</span>
                                 </p>
                                 <p class="d-flex justify-content align-items-center">
                                     <span>Email:</span>
-                                    <span>info@royal-in.com</span>
+                                    <span>{{ $order->user['email'] ?? '' }}</span>
                                 </p>
                             </div>
-                            <div class="col-lg-4 p-4 py-5">
+                            <div class="col-lg-6 p-4 py-5">
                                 <h4 class="text-secondary mb-3">Delivery Address</h4>
                                 <p class="d-flex justify-content-between align-items-center">
                                     <span>City/Town:</span>
-                                    <span>Schleifmuhle</span>
+                                    <span>{{ $order->order_address['city'] ?? '' }}</span>
                                 </p>
                                 <p class="d-flex justify-content-between align-items-center">
-                                    <span>Postal Code:</span>
-                                    <span>85049</span>
+                                    <span>Zipcode:</span>
+                                    <span>{{ $order->order_address['zipcode'] ?? '' }}</span>
                                 </p>
                                 <p class="d-flex justify-content-between align-items-center">
                                     <span>Address:</span>
-                                    <span>Address | B.d Scheifmuhle 34, 85049 Ingolstadt</span>
+                                    <span>{{ (!empty($order->order_address['address_1']) || !empty($order->order_address['address_2'])) ? ( ($order->order_address['address_1'] ?? '') . ' ' . ($order->order_address['address_2'] ?? '') ) : '' }}</span>
                                 </p>
                             </div>
-                            <div class="col-lg-4 p-4 py-5">
+                            {{-- <div class="col-lg-4 p-4 py-5">
                                 <h4 class="text-secondary mb-3">Payment Method</h4>
                                 <p class="d-flex justify-content-between align-items-center">
                                     <span>Card Number:</span>
@@ -237,14 +242,20 @@
                                     <span>CVC:</span>
                                     <span>***</span>
                                 </p>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <div class="order-detail-item order-summary rounded-4 mb-3 row">
                             <div class="col-12 p-4 py-5">
                                 <h4 class="text-secondary">Order Summary</h4>
                                 <div class="order-product-list py-2">
-                                    <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
+                                    @foreach ($order->order_items as $order_item)
+                                        <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
+                                            <p><strong>{{ $order_item->qty }}x</strong> {{ $order_item->order_item_meta['title'] }} {{ $order_item->order_item_meta['unit'] }}{{ $order_item->order_item_meta['unitSymbol'] }}</p>
+                                            <p>{{ $order->transaction->transaction_meta['currency_symbol'] }}{{ ($order_item->order_item_meta['price'] * $order_item->qty) }}</p>
+                                        </div>
+                                    @endforeach
+                                    {{-- <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
                                         <p><strong>1x</strong> Chicken Masala</p>
                                         <p>€40.99</p>
                                     </div>
@@ -255,16 +266,28 @@
                                     <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
                                         <p><strong>3x</strong> Tikka Masala</p>
                                         <p>€120.99</p>
-                                    </div>
-                                    <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
+                                    </div> --}}
+                                    {{-- <div class="order-product-item mb-2 d-flex justify-content-between align-item-center">
                                         <p>Shipping fee</p>
                                         <p>Free</p>
-                                    </div>
+                                    </div> --}}
                                 </div>
                                 <div class="order-summary-total d-flex justify-content-between align-item-center">
+                                    <p>Subtotal</p>
+                                    <p>({{ $order->transaction->transaction_meta['currency_symbol'] }}) {{ $order->transaction->transaction_meta['subtotal'] }}</p>
+                                </div>
+                                <div class="order-summary-total d-flex justify-content-between align-item-center">
+                                    <p>Tax</p>
+                                    <p>({{ $order->transaction->transaction_meta['currency_symbol'] }}) {{ $order->transaction->transaction_meta['tax'] }}</p>
+                                </div>
+                                <div class="order-summary-total d-flex justify-content-between align-item-center">
+                                    <p>Total</p>
+                                    <p>({{ $order->transaction->transaction_meta['currency_symbol'] }}) {{ $order->transaction->transaction_meta['total'] }}</p>
+                                </div>
+                                {{-- <div class="order-summary-total d-flex justify-content-between align-item-center">
                                     <strong>Total</strong>
                                     <strong>€240.99</strong>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     </div>

@@ -23,6 +23,7 @@ class UserController extends Controller
 
     public function order_detail($id) {
         $order = Order::find($id);
+        // return $order;
         return view('user.order-detail', compact('order'));
     }
 

@@ -43,9 +43,9 @@ Route::get('/catalog', function(){
 Route::get('/orders', function(){
     return view('user.orders');
 });
-Route::get('/orders/12345', function(){
-    return view('user.order-detail');
-});
+// Route::get('/orders/12345', function(){
+//     return view('user.order-detail');
+// });
 Route::get('/account-dashboard', function(){
     return view('user.index');
 });
@@ -67,7 +67,7 @@ Route::delete('/cart/clear', [CartController::class, 'empty_cart'])->name('cart.
 // Route::delete('/cart/remove_coupon_code', [CartController::class, 'remove_coupon_code'])->name('cart.remove.coupon.code');
 Route::get('/checkout/{order_id?}', [CartController::class, 'checkout'])->name('checkout.index');
 Route::post('/place-order', [CartController::class, 'place_order'])->name('checkout.place.order');
-Route::get('/order-confirmation', [CartController::class, 'order_confirmation'])->name('order.confirmation');
+Route::get('/order-confirmation/{id}', [CartController::class, 'order_confirmation'])->name('order.confirmation');
 
 Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
 Route::post('/wishlist/add', [WishlistController::class, 'add_to_wishlist'])->name('wishlist.add');
