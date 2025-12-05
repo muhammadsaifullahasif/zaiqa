@@ -64,10 +64,10 @@
                                 <th class="text-center">Tax</th>
                                 <th class="text-center">Total</th>
 
+                                <th class="text-center">Order Type</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Order Date</th>
                                 <th class="text-center">Total Items</th>
-                                <th class="text-center">Delivered On</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -75,16 +75,16 @@
                             @forelse ($orders as $order)
                             <tr>
                                 <td class="text-center">#{{ $order->id }}</td>
-                                <td class="text-center">{{ $order->name }}</td>
-                                <td class="text-center">{{ $order->phone }}</td>
-                                <td class="text-center">${{ $order->subtotal }}</td>
-                                <td class="text-center">${{ $order->tax }}</td>
-                                <td class="text-center">${{ $order->total }}</td>
+                                <td class="text-center">{{ (!empty($order->order_address['first_name']) || !empty($order->order_address['last_name'])) ? ( ($order->order_address['first_name'] ?? '') . ' ' . ($order->order_address['last_name'] ?? '') ) : '' }}</td>
+                                <td class="text-center">{{ $order->order_address['phone'] }}</td>
+                                <td class="text-center">{{ $order->transaction->transaction_meta['currency_symbol'] }}{{ $order->transaction->transaction_meta['subtotal'] }}</td>
+                                <td class="text-center">{{ $order->transaction->transaction_meta['currency_symbol'] }}{{ $order->transaction->transaction_meta['tax'] }}</td>
+                                <td class="text-center">{{ $order->transaction->transaction_meta['currency_symbol'] }}{{ $order->transaction->transaction_meta['total'] }}</td>
 
-                                <td class="text-center">{{ $order->status }}</td>
+                                <td class="text-center">{{ $order->order_type }}</td>
+                                <td class="text-center">{{ $order->order_status }}</td>
                                 <td class="text-center">{{ $order->created_at }}</td>
-                                <td class="text-center">{{ $order->orderItems->count() }}</td>
-                                <td class="text-center">{{ $order->delivered_date }}</td>
+                                <td class="text-center">{{ $order->order_items->count() }}</td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.order.detail', $order->id) }}">
                                         <div class="list-icon-function view-icon" style="justify-content: center;">
@@ -96,7 +96,7 @@
                                 </td>
                             </tr>
                             @empty
-                                
+                                <tr><td colspan="11" class="text-center">No order found.</td></tr>
                             @endforelse
 
                         </tbody>

@@ -16,36 +16,18 @@ use App\Http\Controllers\CheckoutSettingController;
 Auth::routes();
 
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
-// Route::get('/', function() {
-//     return view('auth.login');
-// })->name('home.index');
-// Route::get('/', function() {
-//     return view('index');
-// });
 Route::get('/about', function() {
     return view('about');
-});
+})->name('about.index');
 Route::get('/contact', function() {
     return view('contact');
 })->name('contact.index');
 Route::get('/catalog', function(){
     return view('catalog');
 });
-// Route::get('/single-product', function(){
-//     return view('single-product');
-// });
-// Route::get('/cart', function(){
-//     return view('cart');
-// })->name('cart.index');
-// Route::get('/checkout', function(){
-//     return view('checkout');
-// });
 Route::get('/orders', function(){
     return view('user.orders');
 });
-// Route::get('/orders/12345', function(){
-//     return view('user.order-detail');
-// });
 Route::get('/account-dashboard', function(){
     return view('user.index');
 });
@@ -110,16 +92,6 @@ Route::middleware(['auth'], AuthAdmin::class)->group(function(){
     Route::get('/admin/units/{id}/edit', [AdminController::class, 'unit_edit'])->name('admin.units.edit');
     Route::put('/admin/units/{id}/update', [AdminController::class, 'unit_update'])->name('admin.units.update');
     Route::delete('/admin/units/{id}/delete', [AdminController::class, 'unit_delete'])->name('admin.units.delete');
-
-    // Route::get('/admin/products', [AdminController::class, 'products'])->name('admin.products');
-    // Route::get('/admin/products/add', [AdminController::class, 'product_add'])->name('admin.product.add');
-    // Route::post('/admin/products/store', [AdminController::class, 'product_store'])->name('admin.product.store');
-    // Route::get('/admin/products/edit/{id}', [AdminController::class, 'product_edit'])->name('admin.product.edit');
-    // Route::put('/admin/products/update/{id}', [AdminController::class, 'product_update'])->name('admin.product.update');
-    // Route::delete('/admin/products/delete/{id}', [AdminController::class, 'product_delete'])->name('admin.product.delete');
-    // Route::post('/admin/products/{id}/add-variation', [AdminController::class, 'add_variation'])->name('admin.product.add-variation');
-    // Route::delete('/admin/products/{id}/remove-variation/', [AdminController::class, 'remove_variation'])->name('admin.product.remove-variation');
-    // Route::post('/admin/products/{id}/add-all-variations', [AdminController::class, 'add_all_variations'])->name('admin.product.add-all-variations');
 
     Route::resource('/admin/products', ProductController::class);
     Route::post('/products/upload-attachments', [ProductController::class, 'upload_attachments'])->name('products.upload-attachments');

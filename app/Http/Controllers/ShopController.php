@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\ProductMeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Surfsidemedia\Shoppingcart\Facades\Cart;
@@ -14,11 +15,11 @@ class ShopController extends Controller
     public function index(Request $request) 
     {
 
-        $s = $request->s ?? '';
+        $s = $request->search ?? '';
         $size = $request->page_size ?? 12;
         $orderBy = $request->orderBy ?? '-1';
-        $filter_category = $request->category ?? '';
-        $filter_sub_category = $request->sub_category ?? '';
+        $filter_category = $request->categories ?? '';
+        // $filter_sub_category = $request->sub_category ?? '';
         $min_price = $request->min_price ?? 1;
         $max_price = $request->max_price ?? 999999999;
         $units = $request->units ?? [];
@@ -46,44 +47,97 @@ class ShopController extends Controller
                 $order = 'DESC';
         }
         $categories = Category::orderby('name', 'ASC')->get();
+        $units = ProductMeta::where('product_metas.meta_key', 'unit')
+            ->where('product_metas.meta_value', '!=', '')
+            ->join('products', 'product_metas.product_id', '=', 'products.id')
+            ->join('product_metas as parent_meta', function($join) {
+                $join->on('products.parent_id', '=', 'parent_meta.product_id')
+                    ->where('parent_meta.meta_key', '=', 'unit');
+            })
+            ->select('product_metas.meta_value as unit', 'parent_meta.meta_value as symbol')
+            ->distinct()
+            ->orderBy('product_metas.meta_value')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'unit' => $item->unit,
+                    'symbol' => $item->symbol
+                ];
+            });
+        
+        // return $units;
+
+        // Get min and max prices from all products
+        $priceRange = ProductMeta::where('meta_key', 'price')
+            ->where('meta_value', '!=', '')
+            ->where('meta_value', '>', 0)
+            ->selectRaw('MIN(CAST(meta_value AS UNSIGNED)) as min_price, MAX(CAST(meta_value AS UNSIGNED)) as max_price')
+            ->first();
+
+        $minPrice = $priceRange->min_price ?? 0;
+        $maxPrice = $priceRange->max_price ?? 9999;
+
         $products = Product::query();
 
         // Search query
-        if ($request->has('s') && !empty($request->s)) {
-            $products->where('title', 'like', '%' . $request->s . '%');
+        if ($request->has('search') && !empty($request->search)) {
+            $products->where('title', 'like', '%' . $request->search . '%');
         }
 
         // Category filter
-        if ($request->has('category') && !empty($request->category)) {
-            $products->where('category_id', $request->category);
+        if ($request->has('categories') && !empty($request->categories)) {
+            $products->where('category_id', $request->categories)->orWhere('sub_category_id', $request->categories);
         }
 
         // Sub-category filter
-        if ($request->has('sub_category') && !empty($request->sub_category)) {
-            $products->where('sub_category_id', $request->sub_category);
-        }
+        // if ($request->has('sub_category') && !empty($request->sub_category)) {
+        //     $products->where('sub_category_id', $request->sub_category);
+        // }
 
         // Price range filter
+        // if ($request->has('min_price') && !empty($request->min_price)) {
+        //     $products->whereHas('product_meta', function($query) use ($request) {
+        //         $query->where('meta_key', 'price')
+        //             ->where('meta_value', '>=', $request->min_price);
+        //     });
+        // }
+
         if ($request->has('min_price') && !empty($request->min_price)) {
-            $products->whereHas('product_meta', function($query) use ($request) {
-                $query->where('meta_key', 'price')
-                    ->where('meta_value', '>=', $request->min_price);
+            $products->whereHas('variations', function($q) use ($request) {
+                $q->whereHas('product_meta', function($metaQuery) use ($request) {
+                    $metaQuery->where('meta_key', 'price')
+                        ->where('meta_value', '>=', $request->min_price);
+                });
             });
         }
+
+        // if ($request->has('max_price') && !empty($request->max_price)) {
+        //     $products->whereHas('product_meta', function($query) use ($request) {
+        //         $query->where('meta_key', 'price')
+        //             ->where('meta_value', '<=', $request->max_price);
+        //     });
+        // }
 
         if ($request->has('max_price') && !empty($request->max_price)) {
-            $products->whereHas('product_meta', function($query) use ($request) {
-                $query->where('meta_key', 'price')
-                    ->where('meta_value', '<=', $request->max_price);
+            $products->whereHas('variations', function($q) use ($request) {
+                $q->whereHas('product_meta', function($metaQuery) use ($request) {
+                    $metaQuery->where('meta_key', 'price')
+                        ->where('meta_value', '<=', $request->max_price);
+                });
             });
         }
 
-        // Units filter (multiple selection)
-        if ($request->has('units') && !empty($request->units)) {
-            $units = is_array($request->units) ? $request->units : [$request->units];
-            $products->whereHas('product_meta', function($query) use ($units) {
-                $query->where('meta_key', 'unit')
-                    ->whereIn('meta_value', $units);
+        if ($request->has('units')) {
+            $products->whereHas('variations', function($q) use ($request) {
+                $q->whereHas('product_meta', function($metaQuery) use ($request) {
+                    // Extract just the unit numbers from the "200-g" format
+                    $unitNumbers = array_map(function($unit) {
+                        return explode('-', $unit)[0]; // Get "200" from "200-g"
+                    }, $request->units);
+
+                    $metaQuery->where('meta_key', 'unit')
+                        ->whereIn('meta_value', $unitNumbers);
+                });
             });
         }
 
@@ -168,7 +222,8 @@ class ShopController extends Controller
         // $minPrice = $products->first()->min_price; // Min price is the same for all rows
         // $maxPrice = $products->first()->max_price; // Max price is the same for all rows
         // return $maxPrice;
-        return view('catalog', compact('products', 'size', 'orderBy', 'categories', 'filter_category', 'min_price', 'max_price'));
+        // return $categories;
+        return view('catalog', compact('products', 'size', 'orderBy', 'categories', 'units', 'minPrice', 'maxPrice', 'filter_category', 'min_price', 'max_price'));
     }
 
     public function product_detail($product_slug) {

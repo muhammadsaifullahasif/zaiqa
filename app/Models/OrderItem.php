@@ -12,6 +12,8 @@ class OrderItem extends Model
 
     public $timestamps = false;
 
+    protected $with = ['product'];
+
     protected $appends = ['order_item_meta'];
 
     public function order_item_meta()

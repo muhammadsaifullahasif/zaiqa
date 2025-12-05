@@ -227,27 +227,43 @@ class AdminController extends Controller
     public function orders()
     {
         $orders = Order::orderby('created_at', 'DESC')->paginate(10);
+        // return $orders;
         return view('admin.orders', compact('orders'));
     }
 
     public function order_detail($id)
     {
         $order = Order::find($id);
+        // return $order;
         return view('admin.order-detail', compact('order'));
     }
 
     public function order_status_update(Request $request, $id)
     {
         $order = Order::find($id);
-        $order->status = $request->order_status;
+        $order->order_status = $request->order_status;
 
         if($request->order_status === 'delivered') {
-            $order->delivered_date = Carbon::now();
+            $order->order_meta()->upsert(
+                [
+                    'meta_key' => 'delivered_date',
+                    'meta_value' => Carbon::now(),
+                ],
+                ['meta_key'],
+                ['meta_value']
+            );
             $transaction = Transaction::where('order_id', $id)->first();
             $transaction->status = 'approved';
             $transaction->save();
         } else if($request->order_status === 'canceled') {
-            $order->canceled_date = Carbon::now();
+            $order->order_meta()->upsert(
+                [
+                    'meta_key' => 'canceled_date',
+                    'meta_value' => Carbon::now(),
+                ],
+                ['meta_key'],
+                ['meta_value']
+            );
         }
         $order->save();
 

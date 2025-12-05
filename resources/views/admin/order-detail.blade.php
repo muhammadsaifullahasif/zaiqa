@@ -37,34 +37,28 @@
                             <th>Name</th>
                             <th class="text-center">Price</th>
                             <th class="text-center">Quantity</th>
-                            <th class="text-center">SKU</th>
                             <th class="text-center">Category</th>
-                            <th class="text-center">Brand</th>
                             <th class="text-center">Options</th>
-                            <th class="text-center">Return Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($order->orderItems as $item)
+                        @foreach ($order->order_items as $item)
                         <tr>
 
                             <td class="pname">
                                 <div class="image">
-                                    <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->product->image }}" alt="{{ $item->product->name }}" class="image">
+                                    <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->product->product_meta['thumbnail'] }}" alt="{{ $item->product->name }}" class="image">
                                 </div>
                                 <div class="name">
                                     <a href="#" target="_blank"
-                                        class="body-title-2">{{ $item->product->name }}</a>
+                                        class="body-title-2">{{ $item->order_item_meta['title'] }}</a>
                                 </div>
                             </td>
-                            <td class="text-center">${{ $item->price }}</td>
-                            <td class="text-center">{{ $item->quantity }}</td>
-                            <td class="text-center">{{ $item->product->SKU }}</td>
+                            <td class="text-center">{{ $order->transaction->transaction_meta['currency_symbol'] }}{{ $item->order_item_meta['price'] }}</td>
+                            <td class="text-center">{{ $item->qty }}</td>
                             <td class="text-center">{{ $item->product->category->name }}</td>
-                            <td class="text-center">{{ $item->product->brand->name }}</td>
-                            <td class="text-center"></td>
-                            <td class="text-center">No</td>
+                            <td class="text-center">{{ $item->order_item_meta['unit'] }}{{ $item->order_item_meta['unitSymbol'] }}</td>
                             <td class="text-center">
                                 <div class="list-icon-function view-icon">
                                     <div class="item eye">
@@ -89,13 +83,11 @@
             <h5>Shipping Address</h5>
             <div class="my-account__address-item col-md-6">
                 <div class="my-account__address-item__detail">
-                    <p>{{ $order->name }}</p>
-                    <p>{{ $order->address }}</p>
-                    <p>{{ $order->landmark }}</p>
-                    <p>{{ $order->city }}, {{ $order->state }}, {{ $order->country }}</p>
-                    <p>{{ $order->zip }}</p>
+                    <p>{{ (!empty($order->order_address['first_name']) || !empty($order->order_address['last_name'])) ? ( ($order->order_address['first_name'] ?? '') . ' ' . ($order->order_address['last_name'] ?? '') ) : '' }}</p>
+                    <p>{{ (!empty($order->order_address['address_1']) || !empty($order->order_address['address_2'])) ? ( ($order->order_address['address_1'] ?? '') . ' ' . ($order->order_address['address_2'] ?? '') ) : '' }}</p>
+                    <p>{{ $order->order_address['city'] }}, {{ $order->order_address['zipcode'] }}</p>
                     <br>
-                    <p>Mobile : {{ $order->phone }}</p>
+                    <p>Mobile : {{ $order->order_address['phone'] }}</p>
                 </div>
             </div>
         </div>
@@ -106,15 +98,15 @@
                 <tbody>
                     <tr>
                         <th>Subtotal</th>
-                        <td>${{ $order->subtotal }}</td>
+                        <td>${{ $order->transaction->transaction_meta['subtotal'] }}</td>
                         <th>Tax</th>
-                        <td>${{ $order->tax }}</td>
+                        <td>${{ $order->transaction->transaction_meta['tax'] }}</td>
                         <th>Discount</th>
-                        <td>${{ $order->discount }}</td>
+                        <td>${{ $order->transaction->transaction_meta['discount'] }}</td>
                     </tr>
                     <tr>
                         <th>Total</th>
-                        <td>${{ $order->total }}</td>
+                        <td>${{ $order->transaction->transaction_meta['total'] }}</td>
                         <th>Payment Mode</th>
                         <td>{{ $order->transaction->mode }}</td>
                         <th>Status</th>
@@ -124,9 +116,9 @@
                         <th>Order Date</th>
                         <td>{{ $order->created_at }}</td>
                         <th>Delivered Date</th>
-                        <td>{{ $order->delivered_date }}</td>
+                        <td>{{ $order->order_meta['delivered_date'] ?? '' }}</td>
                         <th>Canceled Date</th>
-                        <td>{{ $order->canceled_date }}</td>
+                        <td>{{ $order->order_meta['canceled_date'] ?? '' }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -141,9 +133,10 @@
                     <div class="col-md-3">
                         <div class="select">
                             <select name="order_status" id="order_status">
-                                <option value="ordered" {{ $order->status == 'ordered' ? 'selected' : '' }}>Ordered</option>
-                                <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                                <option value="canceled" {{ $order->status == 'canceled' ? 'selected' : '' }}>Canceled</option>
+                                <option value="processing" {{ $order->order_status == 'processing' ? 'selected' : '' }}>Processing</option>
+                                <option value="packed" {{ $order->order_status == 'packed' ? 'selected' : '' }}>Packed</option>
+                                <option value="shipped" {{ $order->order_status == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                                <option value="delivered" {{ $order->order_status == 'delivered' ? 'selected' : '' }}>Delivered</option>
                             </select>
                         </div>
                     </div>
