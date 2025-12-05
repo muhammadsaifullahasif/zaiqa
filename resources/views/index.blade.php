@@ -2,8 +2,8 @@
 
 @section('content')
 {{-- HERO START --}}
-<div class="hero">
-    <div class="container">
+<div class="hero py-5">
+    <div class="container py-5">
         <div class="row px-lg-5 px-md-3 align-items-center">
             <div class="col-lg-6 col-md-12">
                 @foreach ($slides as $slide)

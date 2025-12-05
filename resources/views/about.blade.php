@@ -2,9 +2,9 @@
 
 @section('content')
 {{-- HERO START --}}
-<div class="hero">
-    <div class="container">
-        <div class="row px-lg-5 px-md-3 align-items-center">
+<div class="hero py-5">
+    <div class="container py-5">
+        <div class="row py-5 px-lg-5 px-md-3 align-items-center">
             <div class="col-lg-6 col-md-12">
                 <h1 class="heading"><span class="text-white">About Us</span></h1>
                 <p class="text text-white mb-0">Welcome to Royal, where the rich heritage of Pakistani cuisine meets exceptional hospitality. At Royal, we not only offer guests a culinary experience, but we also strive to create a connection to the heart and soul of Pakistan.</p>

@@ -57,12 +57,12 @@ Route::put('/wishlist/update-qty', [WishlistController::class, 'update_wishlist_
 Route::delete('/wishlist/remove-item/{id}', [WishlistController::class, 'remove_wishlist_item'])->name('wishlist.remove.item');
 Route::delete('/wishlist/clear', [WishlistController::class, 'empty_wishlist'])->name('wishlist.clear');
 Route::post('/wishlist/move-to-cart/{id}', [WishlistController::class, 'move_to_cart'])->name('wishlist.move.to.cart');
+Route::get('/account-dashboard/orders/detail/{id}', [UserController::class, 'order_detail'])->name('user.order.detail');
 
 Route::middleware(['auth'])->group(function(){
     // Route::get('/account-dashboard', [UserController::class, 'index'])->name('user.index');
 
     Route::get('/account-dashboard/orders', [UserController::class, 'orders'])->name('user.orders');
-    Route::get('/account-dashboard/orders/detail/{id}', [UserController::class, 'order_detail'])->name('user.order.detail');
     Route::put('/account-dashboard/orders/detail/cancel/{id}', [UserController::class, 'order_cancel'])->name('user.order.cancel');
     Route::get('/account-dashboard/address', [UserController::class, 'address'])->name('user.address');
     Route::get('/account-dashboard/address/add', [UserController::class, 'address_add'])->name('user.address.add');

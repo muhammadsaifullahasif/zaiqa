@@ -1,4 +1,4 @@
-<header class="header header-desktop py-3">
+<header class="header header-desktop py-3 {{ (request()->routeIs('home.index') || request()->routeIs('about.index')) ? 'header-primary' : '' }}">
     <div class="container">
         <div class="row align-items-center px-5">
             <div class="col-md-3">
@@ -50,7 +50,7 @@
     </div>
 </header>
 
-<header class="header header-mobile">
+<header class="header header-mobile {{ (request()->routeIs('home.index') || request()->routeIs('about.index')) ? 'header-primary' : '' }}">
     <div class="container">
         <div class="row align-items-center px-3 py-3">
             <div class="col-4">
