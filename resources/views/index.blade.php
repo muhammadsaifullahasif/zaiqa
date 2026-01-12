@@ -5,7 +5,7 @@
 <div class="hero py-5">
     <div class="container py-5">
         <div class="row px-lg-5 px-md-3 align-items-center">
-            <div class="col-lg-6 col-md-12">
+            <div class="col-lg-6 col-md-12 position-relative">
                 @foreach ($slides as $slide)
                     <h1 class="heading dual-heading slider-title @if ($loop->first) active @endif">
                         <span class="text-secondary tagline">{{ $slide->tagline }}</span>
@@ -14,8 +14,8 @@
                     <p class="text text-white subtitle @if ($loop->first) active @endif">{{ $slide->subtitle }}</p>
                 @endforeach
                 <div class="cta mb-5">
-                    <a href="#" class="btn btn-secondary rounded-pill">Order Delivery</a>
-                    <a href="#" class="btn rounded-pill">Order Pickup</a>
+                    <a href="{{ route('shop.index') }}" class="btn btn-secondary rounded-pill">Order Delivery</a>
+                    <a href="{{ route('shop.index') }}" class="btn rounded-pill">Order Pickup</a>
                 </div>
                 <div class="trusted-by d-flex flex-column gap-2">
                     <p class="text text-white mb-0">Trusted by</p>
@@ -97,7 +97,7 @@
                 <img src="{{ asset('assets/images/trusted-badge.svg') }}" alt="">
                 <h4 class="title">Authentic Taste & Premium Quanlity Blends</h4>
                 <p class="text">Crafted using original regional recipes for real, homemade flavor. Every batch is freshly ground and quality-checked for consistency and rich color.</p>
-                <a href="#" class="text-primary fw-bold">Read More <i class="fas fa-arrow-right-long"></i></a>
+                <a href="{{ route('about.index') }}" class="text-primary fw-bold">Read More <i class="fas fa-arrow-right-long"></i></a>
             </div>
             <div class="col-lg-3 col-md-4 about-img-container text-md-center">
                 <img src="{{ asset('assets/images/about-img.png') }}" class="about-img" alt="">
@@ -106,12 +106,12 @@
                 <img src="{{ asset('assets/images/eco-badge.svg') }}" alt="">
                 <h4 class="title">100% Pure & Natural Ingredients</h4>
                 <p class="text">No preservatives, no artificial colors, only hand-picked spices. Emphasize farm-fresh sourcing and traditional grinding methods to preserve aroma and nutrients.</p>
-                <a href="#" class="text-primary fw-bold">Read More <i class="fas fa-arrow-right-long"></i></a>
+                <a href="{{ route('about.index') }}" class="text-primary fw-bold">Read More <i class="fas fa-arrow-right-long"></i></a>
             </div>
         </div>
         <div class="row px-lg-5 px-md-3 mb-lg-5 mb-md-3">
             <div class="col-12 text-center">
-                <a href="" class="btn btn-secondary rounded-pill cta">About Us</a>
+                <a href="{{ route('about.index') }}" class="btn btn-secondary rounded-pill cta">About Us</a>
             </div>
         </div>
     </div>
@@ -154,7 +154,7 @@
         </div>
         <div class="row px-lg-5 px-md-3 mb-lg-5 mb-md-3">
             <div class="col-12 text-center">
-                <a href="" class="btn btn-secondary rounded-pill cta">View all products</a>
+                <a href="{{ route('shop.index') }}" class="btn btn-secondary rounded-pill cta">View all products</a>
             </div>
         </div>
     </div>
@@ -174,8 +174,8 @@
                 </h3>
                 <p class="text-accent">Experience the perfect blend of authentic flavors and top-quality ingredients. At Royal, every dish is cooked with passion to bring you freshness and taste that feels like home.</p>
                 <div class="cta mb-lg-5 mb-md-3">
-                    <a href="#" class="btn btn-primary rounded-pill">View Deal</a>
-                    <a href="#" class="btn bg-accent text-primary rounded-pill">Explore Menu</a>
+                    <a href="{{ route('deal.index') }}" class="btn btn-primary rounded-pill">View Deal</a>
+                    <a href="{{ route('shop.index') }}" class="btn bg-accent text-primary rounded-pill">Explore Menu</a>
                 </div>
             </div>
         </div>
@@ -233,7 +233,7 @@
         </div>
         <div class="row px-lg-5 px-md-3 mb-lg-5 mb-md-3">
             <div class="col-12 text-center">
-                <a href="" class="btn btn-secondary rounded-pill cta">View all products</a>
+                <a href="{{ route('shop.index') }}" class="btn btn-secondary rounded-pill cta">View all products</a>
             </div>
         </div>
     </div>
@@ -256,13 +256,13 @@
                 <img src="{{ asset('assets/images/pickup-service.svg') }}" alt="">
                 <h4 class="title">Pickup your meal</h4>
                 <p class="text">Grab your food quickly from our restaurant and enjoy it wherever you want</p>
-                <a href="#" class="btn cta rounded-pill">Order Pickup</a>
+                <a href="{{ route('shop.index') }}" class="btn cta rounded-pill">Order Pickup</a>
             </div>
             <div class="col-md-6 px-lg-5 px-md-3 bg-primary text-white text-center service-card d-flex align-items-center justify-content-center flex-column gap-2">
                 <img src="{{ asset('assets/images/delivery-service.svg') }}" alt="">
                 <h4 class="title">Delivery to your doorstep</h4>
                 <p class="text">Hot and fresh meals delivered straight to your home or office with care</p>
-                <a href="#" class="btn cta rounded-pill">Order Delivery</a>
+                <a href="{{ route('shop.index') }}" class="btn cta rounded-pill">Order Delivery</a>
             </div>
         </div>
     </div>

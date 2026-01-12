@@ -9,9 +9,9 @@
                 <h1 class="heading"><span class="text-white">About Us</span></h1>
                 <p class="text text-white mb-0">Welcome to Royal, where the rich heritage of Pakistani cuisine meets exceptional hospitality. At Royal, we not only offer guests a culinary experience, but we also strive to create a connection to the heart and soul of Pakistan.</p>
                 <p class="text text-white mb-0">The name Royal (pronounced Zay-ka) means "taste" or "aroma" in Urdu and perfectly embodies our mission—to bring you the authentic, vibrant, and unforgettable flavors of Pakistan. Our menu is a tribute to the diverse and flavorful traditional cuisine of Pakistan.</p>
-                <div class="cta mb-5">
-                    <a href="#" class="btn btn-secondary rounded-pill">Order Delivery</a>
-                    <a href="#" class="btn rounded-pill">Order Pickup</a>
+                <div class="cta mb-5 mt-3">
+                    <a href="{{ route('shop.index') }}" class="btn btn-secondary rounded-pill">Order Delivery</a>
+                    <a href="{{ route('shop.index') }}" class="btn rounded-pill">Order Pickup</a>
                 </div>
                 <div class="trusted-by d-flex flex-column gap-2">
                     <p class="text text-white mb-0">Trusted by</p>

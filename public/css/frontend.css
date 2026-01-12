@@ -1215,24 +1215,29 @@ input[type="radio"]:active {
 
 .hero {
     background-color: var(--primary-color);
+    background-image: url('../hero-bg.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
     padding: 2.5rem 0;
 }
 
 .hero .heading {
-    /* display: none; */
-    /* display: block; */
     font-weight: bold;
     opacity: 0;
-    visibility: hidden;
     position: absolute;
-    transition: opacity 0.5s ease-in-out, visibility 0.8s ease-in-out;
+    top: 0;
+    left: 0;
+    right: 0;
+    transition: none;
+    pointer-events: none;
 }
 
 .hero .heading.active {
-    /* display: block; */
     opacity: 1;
-    visibility: visible;
     position: relative;
+    pointer-events: auto;
+    transition: opacity 0.8s ease-in-out;
 }
 
 .hero .heading span:first-child, .hero .heading span:last-child {
@@ -1246,18 +1251,20 @@ input[type="radio"]:active {
 }
 
 .hero .subtitle {
-    /* display: none; */
     opacity: 0;
-    visibility: hidden;
     position: absolute;
-    transition: opacity 0.5s ease-in-out, visibility 0.8s ease-in-out;
+    top: 0;
+    left: 0;
+    right: 0;
+    transition: none;
+    pointer-events: none;
 }
 
 .hero .subtitle.active {
-    /* display: block; */
     opacity: 1;
-    visibility: visible;
     position: relative;
+    pointer-events: auto;
+    transition: opacity 0.8s ease-in-out;
 }
 
 .hero .cta {
@@ -1313,18 +1320,20 @@ input[type="radio"]:active {
 }
 
 .hero .hero-img:not(.hero-img-bg) {
-    /* display: none; */
     opacity: 0;
-    visibility: hidden;
     position: absolute;
-    transition: opacity 0.5s ease-in-out, visibility 0.8s ease-in-out;
+    top: 0;
+    left: 0;
+    right: 0;
+    transition: none;
+    pointer-events: none;
 }
 
 .hero .hero-img.active:not(.hero-img-bg) {
-    /* display: block; */
     opacity: 1;
-    visibility: visible;
     position: relative;
+    pointer-events: auto;
+    transition: opacity 0.8s ease-in-out;
 }
 
 .hero .hero-img.hero-img-bg {

@@ -14,11 +14,11 @@
             <div class="col-lg-2 footer-column px-lg-3 px-md-0">
                 <h4 class="footer-title">Quick Links</h4>
                 <ul class="footer-links list-unstyled">
-                    <li><a href="#" class="text-white">Home</a></li>
-                    <li><a href="#" class="text-white">Shop</a></li>
-                    <li><a href="#" class="text-white">Deals</a></li>
-                    <li><a href="#" class="text-white">About</a></li>
-                    <li><a href="#" class="text-white">Contact Us</a></li>
+                    <li><a href="{{ route('home.index') }}" class="text-white">Home</a></li>
+                    <li><a href="{{ route('shop.index') }}" class="text-white">Shop</a></li>
+                    <li><a href="{{ route('deal.index') }}" class="text-white">Deals</a></li>
+                    <li><a href="{{ route('about.index') }}" class="text-white">About</a></li>
+                    <li><a href="{{ route('contact.index') }}" class="text-white">Contact Us</a></li>
                 </ul>
             </div>
             <div class="col-lg-3 footer-column px-lg-3 px-md-0">

@@ -35,6 +35,7 @@ Route::get('/account-details-edit', function(){
     return view('user.account-detail-edit');
 });
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/deal', [ShopController::class, 'deal'])->name('deal.index');
 Route::get('/search', [HomeController::class, 'search'])->name('home.search');
 // Route::get('/contact', [HomeController::class, 'contact_index'])->name('contact.index');
 Route::post('/contact/store', [HomeController::class, 'contact_store'])->name('contact.store');
